@@ -1,251 +1,390 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VigiTrack Lite – Medical Device Incident Reporting</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        :root {
-            --primary: #0b5ed7;
-            --bg: #f4f6f9;
-            --danger: #dc3545;
-            --warning: #fd7e14;
-            --success: #198754;
-        }
-        body {
-            margin: 0;
-            font-family: Segoe UI, Arial;
-            background: var(--bg);
-        }
-        header {
-            background: var(--primary);
-            color: white;
-            padding: 14px;
-            text-align: center;
-        }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            padding: 16px;
-        }
-        .card {
-            background: white;
-            padding: 16px;
-            margin-bottom: 16px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            color: var(--primary);
-            margin-top: 0;
-        }
-        label {
-            font-size: 13px;
-            font-weight: 600;
-            margin-top: 8px;
-            display: block;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            margin-top: 4px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-        button {
-            margin-top: 12px;
-            padding: 12px;
-            width: 100%;
-            border: none;
-            border-radius: 6px;
-            background: var(--primary);
-            color: white;
-            font-size: 15px;
-            cursor: pointer;
-        }
-        button:hover {
-            opacity: 0.9;
-        }
-        .badge {
-            padding: 4px 10px;
-            color: white;
-            border-radius: 12px;
-            font-size: 12px;
-        }
-        .low {
-            background: var(--success);
-        }
-        .medium {
-            background: var(--warning);
-        }
-        .high {
-            background: var(--danger);
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        th, td {
-            padding: 8px;
-            border-bottom: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background: #f9f9f9;
-            font-weight: 600;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>VigiTrack Lite – Hospital Device Vigilance & NABH Compliance</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+:root{
+  --primary:#0a3d62;
+  --secondary:#eef3f7;
+  --accent:#1e90ff;
+  --danger:#c0392b;
+  --warning:#f39c12;
+  --success:#27ae60;
+  --text:#2c3e50;
+}
+
+body{
+  margin:0;
+  font-family:Segoe UI,Arial,sans-serif;
+  background:var(--secondary);
+  color:var(--text);
+}
+
+header{
+  background:var(--primary);
+  color:#fff;
+  padding:16px;
+  text-align:center;
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:16px;
+}
+
+.card{
+  background:#fff;
+  border-radius:8px;
+  padding:16px;
+  margin-bottom:18px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+}
+
+h2{
+  margin-top:0;
+  color:var(--primary);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+}
+
+label{
+  font-size:13px;
+  font-weight:600;
+}
+
+label span{
+  color:#777;
+  font-weight:400;
+  font-size:12px;
+}
+
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  margin-top:4px;
+}
+
+textarea{resize:vertical;}
+
+button{
+  padding:12px;
+  border:none;
+  border-radius:6px;
+  font-size:14px;
+  cursor:pointer;
+}
+
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-secondary{background:#7f8c8d;color:#fff;}
+.btn-success{background:var(--success);color:#fff;}
+
+.badge{
+  padding:4px 10px;
+  color:#fff;
+  border-radius:12px;
+  font-size:12px;
+}
+
+.low{background:var(--success);}
+.medium{background:var(--warning);}
+.high{background:var(--danger);}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+th,td{
+  padding:8px;
+  border-bottom:1px solid #ddd;
+}
+
+.filter-bar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+
+@media(max-width:600px){
+  table{font-size:12px;}
+}
+</style>
 </head>
+
 <body>
-    <header>
-        <h1>VigiTrack Lite</h1>
-        <p>Medical Device Incident & Vigilance Capture - MDR 2017</p>
-    </header>
-    <div class="container">
-        <div class="card">
-            <h2>📋 Device Incident Report</h2>
-            <label>Reporter Role <span style="color: red;">*</span></label>
-            <select id="role">
-                <option value="">Select Role</option>
-                <option value="Nurse">Nurse</option>
-                <option value="Technician">Technician</option>
-                <option value="Biomedical Engineer">Biomedical Engineer</option>
-                <option value="Doctor">Doctor</option>
-            </select>
 
-            <label>Department</label>
-            <input type="text" id="department" placeholder="ICU / OT" />
+<header>
+  <h1>VigiTrack Lite</h1>
+  <p>Medical Device Incident, Vigilance & NABH Audit System</p>
+</header>
 
-            <label>Device Name <span style="color: red;">*</span></label>
-            <input type="text" id="device" placeholder="Infusion Pump" />
+<div class="container">
 
-            <label>Manufacturer</label>
-            <select id="manufacturer">
-                <option value="">Select Manufacturer</option>
-                <option value="Siemens">Siemens</option>
-                <option value="GE Healthcare">GE Healthcare</option>
-                <option value="Philips">Philips</option>
-                <option value="Other">Other</option>
-            </select>
+<!-- INCIDENT FORM -->
+<div class="card">
+<h2>Device Incident & Quality Record</h2>
 
-            <label>Model</label>
-            <input type="text" id="model" />
+<div class="grid">
 
-            <label>Serial / Lot</label>
-            <input type="text" id="serial" />
+<div>
+<label>Complaint Registration Date <span>(NABH)</span></label>
+<input type="date" id="regDate">
+</div>
 
-            <label>Description <span style="color: red;">*</span></label>
-            <textarea id="desc" rows="4" placeholder="Describe the incident in detail..."></textarea>
+<div>
+<label>Reporter Role</label>
+<select id="role">
+<option>Nurse</option><option>Technician</option>
+<option>Biomedical Engineer</option><option>Doctor</option>
+</select>
+</div>
 
-            <label>Patient Involved?</label>
-            <select id="patient" value="no">
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-            </select>
+<div>
+<label>Department</label>
+<input id="department" placeholder="ICU / OT">
+</div>
 
-            <label>Injury?</label>
-            <select id="injury" value="no">
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-            </select>
+<div>
+<label>Device Name</label>
+<input id="device">
+</div>
 
-            <label>Device Malfunction?</label>
-            <select id="malfunction" value="no">
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-            </select>
+<div>
+<label>Manufacturer</label>
+<select id="manufacturer">
+<option>Siemens</option><option>GE Healthcare</option><option>Philips</option>
+<option>Apollo</option><option>Fortis</option><option>Max Healthcare</option>
+<option>Medanta</option><option>Manipal</option><option>Aster DM</option>
+<option>Acibadem</option><option>Sakra</option><option>CARE</option>
+<option>Narayana Health</option><option>Columbia Asia</option>
+</select>
+</div>
 
-            <button onclick="submitIncident()">✅ Submit Incident</button>
-        </div>
+<div>
+<label>Device Category</label>
+<select id="category">
+<option>Critical</option><option>Non-critical</option>
+</select>
+</div>
 
-        <div class="card">
-            <h2>📊 Recorded Incidents</h2>
-            <table>
-                <tr>
-                    <th>Device</th>
-                    <th>Dept</th>
-                    <th>Severity</th>
-                    <th>PDF</th>
-                </tr>
-                <tbody id="list"></tbody>
-            </table>
-        </div>
-    </div>
+<div>
+<label>Patient Involved?</label>
+<select id="patient"><option value="no">No</option><option value="yes">Yes</option></select>
+</div>
 
-    <script>
-        const KEY = "vigitrack_data";
+<div>
+<label>Injury?</label>
+<select id="injury"><option value="no">No</option><option value="yes">Yes</option></select>
+</div>
 
-        function severity(p, i, m) {
-            if (p && i && m) return "High";
-            if (m) return "Medium";
-            return "Low";
-        }
+<div>
+<label>Device Malfunction?</label>
+<select id="malfunction"><option value="no">No</option><option value="yes">Yes</option></select>
+</div>
 
-        function submitIncident() {
-            const d = {
-                role: role.value,
-                dept: department.value,
-                device: device.value,
-                manu: manufacturer.value,
-                model: model.value,
-                serial: serial.value,
-                desc: desc.value,
-                patient: patient.value === "yes",
-                injury: injury.value === "yes",
-                malfunction: malfunction.value === "yes",
-                date: new Date().toLocaleString()
-            };
+<div>
+<label>Risk Assessment</label>
+<select id="risk">
+<option>Low</option><option>Medium</option><option>High</option>
+</select>
+</div>
 
-            d.sev = severity(d.patient, d.injury, d.malfunction);
+<div>
+<label>Root Cause Category</label>
+<select id="rootCause">
+<option>Material Defect</option>
+<option>User Error</option>
+<option>Maintenance Issue</option>
+<option>Other</option>
+</select>
+</div>
 
-            let data = JSON.parse(localStorage.getItem(KEY) || "[]");
-            data.push(d);
-            localStorage.setItem(KEY, JSON.stringify(data));
-            load();
-            alert("Incident recorded");
-        }
+<div>
+<label>Corrective Action Required?</label>
+<select id="caRequired"><option>No</option><option>Yes</option></select>
+</div>
 
-        function load() {
-            let t = document.getElementById("list");
-            t.innerHTML = "";
-            let data = JSON.parse(localStorage.getItem(KEY) || "[]");
-            data.forEach((d, i) => {
-                let severityClass = d.sev === "High" ? "high" : d.sev === "Medium" ? "medium" : "low";
-                t.innerHTML += `<tr><td>${d.device}</td><td>${d.dept}</td><td><span class="badge ${severityClass}">${d.sev}</span></td><td><button style="width: auto; padding: 6px 12px;" onclick="pdf(${i})">PDF</button></td></tr>`;
-            });
-        }
+<div>
+<label>Investigation Status</label>
+<select id="status">
+<option>Open</option><option>In Progress</option><option>Closed</option>
+</select>
+</div>
 
-        function pdf(i) {
-            const { jsPDF } = window.jspdf;
-            let d = JSON.parse(localStorage.getItem(KEY))[i];
-            let p = new jsPDF();
-            let y = 20;
-            p.text("Medical Device Incident Report", 20, y);
-            y += 10;
-            Object.keys(d).forEach(k => {
-                p.text(`${k}: ${d[k]}`, 20, y);
-                y += 8;
-            });
-            p.save("VigiTrack_Report.pdf");
-        }
+<div>
+<label>NABH Compliance Status</label>
+<select id="nabh">
+<option>Pending</option><option>Compliant</option><option>Non-Compliant</option>
+</select>
+</div>
 
-        // Initialize with sample data
-        if (!localStorage.getItem(KEY)) {
-            localStorage.setItem(KEY, JSON.stringify([
-                {
-                    device: "Infusion Pump",
-                    dept: "ICU",
-                    sev: "Medium",
-                    patient: true,
-                    injury: false,
-                    malfunction: true
-                }
-            ]));
-        }
-        load();
-    </script>
+<div>
+<label>Regulatory Notification Required?</label>
+<select id="regNotify"><option>No</option><option>Yes</option></select>
+</div>
+
+<div>
+<label>Regulatory Body</label>
+<select id="regBody">
+<option>CDSCO</option>
+<option>State Health Dept</option>
+</select>
+</div>
+
+</div>
+
+<label>Corrective Action Description</label>
+<textarea id="caDesc"></textarea>
+
+<label>QA Head Name</label>
+<input id="qaHead">
+
+<label>QA Sign-off Date</label>
+<input type="date" id="qaDate">
+
+<button class="btn-primary" onclick="saveIncident()">Save Incident</button>
+</div>
+
+<!-- FILTERS -->
+<div class="card">
+<div class="filter-bar">
+<select id="filterSeverity" onchange="loadTable()">
+<option value="">All Severities</option>
+<option>Low</option><option>Medium</option><option>High</option>
+</select>
+
+<select id="filterStatus" onchange="loadTable()">
+<option value="">All Status</option>
+<option>Open</option><option>In Progress</option><option>Closed</option>
+</select>
+
+<button class="btn-secondary" onclick="downloadCSV()">Download CSV</button>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Device</th>
+<th>Dept</th>
+<th>Severity</th>
+<th>Risk</th>
+<th>Status</th>
+<th>PDF</th>
+</tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+</div>
+
+</div>
+
+<script>
+const KEY="vigitrack_enhanced";
+
+function classifySeverity(p,i,m){
+ if(p&&i&&m) return "High";
+ if(m) return "Medium";
+ return "Low";
+}
+
+function saveIncident(){
+ let reg=document.getElementById("regDate").value;
+ if(!reg){ alert("Registration date required"); return; }
+
+ let data=JSON.parse(localStorage.getItem(KEY)||"[]");
+
+ let incident={
+  regDate:reg,
+  role:role.value,
+  dept:department.value,
+  device:device.value,
+  manufacturer:manufacturer.value,
+  category:category.value,
+  patient:patient.value,
+  injury:injury.value,
+  malfunction:malfunction.value,
+  risk:risk.value,
+  rootCause:rootCause.value,
+  caRequired:caRequired.value,
+  caDesc:caDesc.value,
+  status:status.value,
+  nabh:nabh.value,
+  regNotify:regNotify.value,
+  regBody:regBody.value,
+  qaHead:qaHead.value,
+  qaDate:qaDate.value,
+  severity:classifySeverity(patient.value==="yes",injury.value==="yes",malfunction.value==="yes")
+ };
+
+ data.push(incident);
+ localStorage.setItem(KEY,JSON.stringify(data));
+ loadTable();
+ alert("Incident saved successfully");
+}
+
+function loadTable(){
+ let body=document.getElementById("tableBody");
+ body.innerHTML="";
+ let fs=document.getElementById("filterSeverity").value;
+ let fst=document.getElementById("filterStatus").value;
+ let data=JSON.parse(localStorage.getItem(KEY)||"[]");
+
+ data.forEach((d,i)=>{
+  if(fs && d.severity!==fs) return;
+  if(fst && d.status!==fst) return;
+
+  body.innerHTML+=`
+  <tr>
+    <td>${d.device}</td>
+    <td>${d.dept}</td>
+    <td><span class="badge ${d.severity.toLowerCase()}">${d.severity}</span></td>
+    <td>${d.risk}</td>
+    <td>${d.status}</td>
+    <td><button onclick="exportPDF(${i})">PDF</button></td>
+  </tr>`;
+ });
+}
+
+function exportPDF(i){
+ const {jsPDF}=window.jspdf;
+ let d=JSON.parse(localStorage.getItem(KEY))[i];
+ let pdf=new jsPDF();
+ let y=15;
+ pdf.text("Hospital Device Incident & NABH Record",20,y); y+=10;
+ Object.keys(d).forEach(k=>{ pdf.text(`${k}: ${d[k]}`,20,y); y+=8; });
+ pdf.save("VigiTrack_NABH_Record.pdf");
+}
+
+function downloadCSV(){
+ let data=JSON.parse(localStorage.getItem(KEY)||"[]");
+ if(!data.length){alert("No data");return;}
+ let csv=Object.keys(data[0]).join(",")+"\n";
+ data.forEach(r=>{
+  csv+=Object.values(r).join(",")+"\n";
+ });
+ let blob=new Blob([csv],{type:"text/csv"});
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="VigiTrack_Incident_Log.csv";
+ a.click();
+}
+
+loadTable();
+</script>
+
 </body>
 </html>
