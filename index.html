@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>VigiTrack Lite – Hospital Device Vigilance & NABH Compliance</title>
+<title>VigiTrack Lite – Device Vigilance & NABH Compliance</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -10,64 +10,55 @@
 <style>
 :root{
   --primary:#0a3d62;
-  --secondary:#eef3f7;
+  --bg:#eef3f7;
   --accent:#1e90ff;
-  --danger:#c0392b;
-  --warning:#f39c12;
   --success:#27ae60;
+  --warning:#f39c12;
+  --danger:#c0392b;
   --text:#2c3e50;
 }
-
 body{
   margin:0;
   font-family:Segoe UI,Arial,sans-serif;
-  background:var(--secondary);
+  background:var(--bg);
   color:var(--text);
 }
-
 header{
   background:var(--primary);
   color:#fff;
   padding:16px;
   text-align:center;
 }
-
 .container{
-  max-width:1100px;
+  max-width:1200px;
   margin:auto;
   padding:16px;
 }
-
 .card{
   background:#fff;
-  border-radius:8px;
   padding:16px;
   margin-bottom:18px;
+  border-radius:8px;
   box-shadow:0 3px 8px rgba(0,0,0,0.08);
 }
-
 h2{
   margin-top:0;
   color:var(--primary);
 }
-
 .grid{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
   gap:12px;
 }
-
 label{
   font-size:13px;
   font-weight:600;
 }
-
 label span{
-  color:#777;
-  font-weight:400;
   font-size:12px;
+  font-weight:400;
+  color:#666;
 }
-
 input,select,textarea{
   width:100%;
   padding:10px;
@@ -75,9 +66,7 @@ input,select,textarea{
   border-radius:6px;
   margin-top:4px;
 }
-
 textarea{resize:vertical;}
-
 button{
   padding:12px;
   border:none;
@@ -85,40 +74,32 @@ button{
   font-size:14px;
   cursor:pointer;
 }
-
 .btn-primary{background:var(--accent);color:#fff;}
 .btn-secondary{background:#7f8c8d;color:#fff;}
-.btn-success{background:var(--success);color:#fff;}
-
 .badge{
   padding:4px 10px;
   color:#fff;
   border-radius:12px;
   font-size:12px;
 }
-
 .low{background:var(--success);}
 .medium{background:var(--warning);}
 .high{background:var(--danger);}
-
 table{
   width:100%;
   border-collapse:collapse;
   font-size:13px;
 }
-
 th,td{
   padding:8px;
   border-bottom:1px solid #ddd;
 }
-
 .filter-bar{
   display:flex;
   gap:10px;
   flex-wrap:wrap;
   margin-bottom:10px;
 }
-
 @media(max-width:600px){
   table{font-size:12px;}
 }
@@ -141,16 +122,14 @@ th,td{
 <div class="grid">
 
 <div>
-<label>Complaint Registration Date <span>(NABH)</span></label>
-<input type="date" id="regDate">
+<label>Device Name</label>
+<input id="device" required>
 </div>
 
+<!-- ✅ EVENT DATE – PROMINENT & MANDATORY -->
 <div>
-<label>Reporter Role</label>
-<select id="role">
-<option>Nurse</option><option>Technician</option>
-<option>Biomedical Engineer</option><option>Doctor</option>
-</select>
+<label>Event / Complaint Registration Date <span>(Mandatory – NABH)</span></label>
+<input type="date" id="eventDate" required>
 </div>
 
 <div>
@@ -159,47 +138,82 @@ th,td{
 </div>
 
 <div>
-<label>Device Name</label>
-<input id="device">
+<label>Reporter Role</label>
+<select id="role">
+<option>Nurse</option>
+<option>Technician</option>
+<option>Biomedical Engineer</option>
+<option>Doctor</option>
+</select>
 </div>
 
 <div>
-<label>Manufacturer</label>
+<label>Manufacturer / Hospital Group</label>
 <select id="manufacturer">
-<option>Siemens</option><option>GE Healthcare</option><option>Philips</option>
-<option>Apollo</option><option>Fortis</option><option>Max Healthcare</option>
-<option>Medanta</option><option>Manipal</option><option>Aster DM</option>
-<option>Acibadem</option><option>Sakra</option><option>CARE</option>
-<option>Narayana Health</option><option>Columbia Asia</option>
+<option>Siemens</option>
+<option>GE Healthcare</option>
+<option>Philips</option>
+<option>Apollo Hospitals</option>
+<option>Fortis Healthcare</option>
+<option>Max Healthcare</option>
+<option>Medanta</option>
+<option>Manipal Hospitals</option>
+<option>Aster DM Healthcare</option>
+<option>Acibadem</option>
+<option>Sakra World Hospital</option>
+<option>CARE Hospitals</option>
+<option>Narayana Health</option>
+<option>Columbia Asia</option>
 </select>
 </div>
 
 <div>
 <label>Device Category</label>
 <select id="category">
-<option>Critical</option><option>Non-critical</option>
+<option>Critical</option>
+<option>Non-critical</option>
 </select>
 </div>
 
 <div>
 <label>Patient Involved?</label>
-<select id="patient"><option value="no">No</option><option value="yes">Yes</option></select>
+<select id="patient">
+<option value="no">No</option>
+<option value="yes">Yes</option>
+</select>
 </div>
 
 <div>
-<label>Injury?</label>
-<select id="injury"><option value="no">No</option><option value="yes">Yes</option></select>
+<label>Injury Occurred?</label>
+<select id="injury">
+<option value="no">No</option>
+<option value="yes">Yes</option>
+</select>
 </div>
 
 <div>
 <label>Device Malfunction?</label>
-<select id="malfunction"><option value="no">No</option><option value="yes">Yes</option></select>
+<select id="malfunction">
+<option value="no">No</option>
+<option value="yes">Yes</option>
+</select>
 </div>
 
 <div>
 <label>Risk Assessment</label>
 <select id="risk">
-<option>Low</option><option>Medium</option><option>High</option>
+<option>Low</option>
+<option>Medium</option>
+<option>High</option>
+</select>
+</div>
+
+<div>
+<label>Investigation Status</label>
+<select id="status">
+<option>Open</option>
+<option>In Progress</option>
+<option>Closed</option>
 </select>
 </div>
 
@@ -215,33 +229,34 @@ th,td{
 
 <div>
 <label>Corrective Action Required?</label>
-<select id="caRequired"><option>No</option><option>Yes</option></select>
-</div>
-
-<div>
-<label>Investigation Status</label>
-<select id="status">
-<option>Open</option><option>In Progress</option><option>Closed</option>
+<select id="caRequired">
+<option>No</option>
+<option>Yes</option>
 </select>
 </div>
 
 <div>
 <label>NABH Compliance Status</label>
 <select id="nabh">
-<option>Pending</option><option>Compliant</option><option>Non-Compliant</option>
+<option>Pending</option>
+<option>Compliant</option>
+<option>Non-Compliant</option>
 </select>
 </div>
 
 <div>
 <label>Regulatory Notification Required?</label>
-<select id="regNotify"><option>No</option><option>Yes</option></select>
+<select id="regNotify">
+<option>No</option>
+<option>Yes</option>
+</select>
 </div>
 
 <div>
 <label>Regulatory Body</label>
 <select id="regBody">
 <option>CDSCO</option>
-<option>State Health Dept</option>
+<option>State Health Department</option>
 </select>
 </div>
 
@@ -250,7 +265,7 @@ th,td{
 <label>Corrective Action Description</label>
 <textarea id="caDesc"></textarea>
 
-<label>QA Head Name</label>
+<label>Quality Assurance Head Name</label>
 <input id="qaHead">
 
 <label>QA Sign-off Date</label>
@@ -259,17 +274,21 @@ th,td{
 <button class="btn-primary" onclick="saveIncident()">Save Incident</button>
 </div>
 
-<!-- FILTERS -->
+<!-- FILTER & TABLE -->
 <div class="card">
 <div class="filter-bar">
 <select id="filterSeverity" onchange="loadTable()">
 <option value="">All Severities</option>
-<option>Low</option><option>Medium</option><option>High</option>
+<option>Low</option>
+<option>Medium</option>
+<option>High</option>
 </select>
 
 <select id="filterStatus" onchange="loadTable()">
 <option value="">All Status</option>
-<option>Open</option><option>In Progress</option><option>Closed</option>
+<option>Open</option>
+<option>In Progress</option>
+<option>Closed</option>
 </select>
 
 <button class="btn-secondary" onclick="downloadCSV()">Download CSV</button>
@@ -279,6 +298,7 @@ th,td{
 <thead>
 <tr>
 <th>Device</th>
+<th>Event Date</th>
 <th>Dept</th>
 <th>Severity</th>
 <th>Risk</th>
@@ -293,41 +313,48 @@ th,td{
 </div>
 
 <script>
-const KEY="vigitrack_enhanced";
+const KEY="vigitrack_final";
 
 function classifySeverity(p,i,m){
- if(p&&i&&m) return "High";
+ if(p && i && m) return "High";
  if(m) return "Medium";
  return "Low";
 }
 
 function saveIncident(){
- let reg=document.getElementById("regDate").value;
- if(!reg){ alert("Registration date required"); return; }
+ let eventDate=document.getElementById("eventDate").value;
+ if(!eventDate){
+   alert("Event / Complaint Registration Date is mandatory");
+   return;
+ }
 
  let data=JSON.parse(localStorage.getItem(KEY)||"[]");
 
  let incident={
-  regDate:reg,
-  role:role.value,
-  dept:department.value,
   device:device.value,
+  eventDate:eventDate,
+  department:department.value,
+  role:role.value,
   manufacturer:manufacturer.value,
   category:category.value,
   patient:patient.value,
   injury:injury.value,
   malfunction:malfunction.value,
   risk:risk.value,
+  status:status.value,
   rootCause:rootCause.value,
   caRequired:caRequired.value,
   caDesc:caDesc.value,
-  status:status.value,
   nabh:nabh.value,
   regNotify:regNotify.value,
   regBody:regBody.value,
   qaHead:qaHead.value,
   qaDate:qaDate.value,
-  severity:classifySeverity(patient.value==="yes",injury.value==="yes",malfunction.value==="yes")
+  severity:classifySeverity(
+    patient.value==="yes",
+    injury.value==="yes",
+    malfunction.value==="yes"
+  )
  };
 
  data.push(incident);
@@ -341,6 +368,7 @@ function loadTable(){
  body.innerHTML="";
  let fs=document.getElementById("filterSeverity").value;
  let fst=document.getElementById("filterStatus").value;
+
  let data=JSON.parse(localStorage.getItem(KEY)||"[]");
 
  data.forEach((d,i)=>{
@@ -350,7 +378,8 @@ function loadTable(){
   body.innerHTML+=`
   <tr>
     <td>${d.device}</td>
-    <td>${d.dept}</td>
+    <td>${d.eventDate}</td>
+    <td>${d.department}</td>
     <td><span class="badge ${d.severity.toLowerCase()}">${d.severity}</span></td>
     <td>${d.risk}</td>
     <td>${d.status}</td>
@@ -364,18 +393,23 @@ function exportPDF(i){
  let d=JSON.parse(localStorage.getItem(KEY))[i];
  let pdf=new jsPDF();
  let y=15;
- pdf.text("Hospital Device Incident & NABH Record",20,y); y+=10;
- Object.keys(d).forEach(k=>{ pdf.text(`${k}: ${d[k]}`,20,y); y+=8; });
- pdf.save("VigiTrack_NABH_Record.pdf");
+ pdf.text("Medical Device Incident & NABH Audit Record",20,y); y+=10;
+ Object.keys(d).forEach(k=>{
+   pdf.text(`${k}: ${d[k]}`,20,y);
+   y+=8;
+ });
+ pdf.save("VigiTrack_NABH_Incident.pdf");
 }
 
 function downloadCSV(){
  let data=JSON.parse(localStorage.getItem(KEY)||"[]");
- if(!data.length){alert("No data");return;}
+ if(!data.length){ alert("No records available"); return; }
+
  let csv=Object.keys(data[0]).join(",")+"\n";
  data.forEach(r=>{
-  csv+=Object.values(r).join(",")+"\n";
+   csv+=Object.values(r).join(",")+"\n";
  });
+
  let blob=new Blob([csv],{type:"text/csv"});
  let a=document.createElement("a");
  a.href=URL.createObjectURL(blob);
