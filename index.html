@@ -295,4 +295,25 @@ document.getElementById("pdfBtn").onclick = () => {
 
 <div class="card">
 <h2>All Complaints</h2>
-<p class="counter">Total Complaints: <span id="
+<p class="counter">Total Complaints: <span id="count">0</span></p>
+<button class="btn-secondary" id="pdfBtn">Export to PDF</button>
+
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Date</th>
+<th>Device</th>
+<th>Severity</th>
+<th>Status</th>
+<th>Actions</th>
+</tr>
+</thead>
+<tbody id="complaintsTable"></tbody>
+</table>
+</div>
+
+</div>
+
+</body>
+</html>
