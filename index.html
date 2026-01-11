@@ -2,423 +2,297 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>VigiTrack Lite – Device Vigilance & NABH Compliance</title>
+<title>VigiTrack Lite – Medical Device Incident Reporting</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+<!-- Styling -->
 <style>
-:root{
-  --primary:#0a3d62;
-  --bg:#eef3f7;
-  --accent:#1e90ff;
-  --success:#27ae60;
-  --warning:#f39c12;
-  --danger:#c0392b;
-  --text:#2c3e50;
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 0;
 }
-body{
-  margin:0;
-  font-family:Segoe UI,Arial,sans-serif;
-  background:var(--bg);
-  color:var(--text);
+header {
+    background: #0b5ed7;
+    color: #fff;
+    padding: 16px;
+    text-align: center;
 }
-header{
-  background:var(--primary);
-  color:#fff;
-  padding:16px;
-  text-align:center;
+.container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 20px;
 }
-.container{
-  max-width:1200px;
-  margin:auto;
-  padding:16px;
+.card {
+    background: #fff;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
-.card{
-  background:#fff;
-  padding:16px;
-  margin-bottom:18px;
-  border-radius:8px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+h2 {
+    margin-top: 0;
 }
-h2{
-  margin-top:0;
-  color:var(--primary);
+label {
+    font-weight: bold;
+    display: block;
+    margin-top: 10px;
 }
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-  gap:12px;
+input, select, textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 4px;
 }
-label{
-  font-size:13px;
-  font-weight:600;
+textarea {
+    resize: vertical;
 }
-label span{
-  font-size:12px;
-  font-weight:400;
-  color:#666;
+button {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
 }
-input,select,textarea{
-  width:100%;
-  padding:10px;
-  border:1px solid #ccc;
-  border-radius:6px;
-  margin-top:4px;
+.btn-primary { background: #0b5ed7; color: #fff; }
+.btn-danger { background: #dc3545; color: #fff; }
+.btn-secondary { background: #6c757d; color: #fff; }
+.btn-success { background: #198754; color: #fff; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
 }
-textarea{resize:vertical;}
-button{
-  padding:12px;
-  border:none;
-  border-radius:6px;
-  font-size:14px;
-  cursor:pointer;
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
 }
-.btn-primary{background:var(--accent);color:#fff;}
-.btn-secondary{background:#7f8c8d;color:#fff;}
-.badge{
-  padding:4px 10px;
-  color:#fff;
-  border-radius:12px;
-  font-size:12px;
+th {
+    background: #e9ecef;
 }
-.low{background:var(--success);}
-.medium{background:var(--warning);}
-.high{background:var(--danger);}
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:13px;
+.actions button {
+    margin-right: 5px;
 }
-th,td{
-  padding:8px;
-  border-bottom:1px solid #ddd;
+.counter {
+    font-size: 16px;
+    font-weight: bold;
 }
-.filter-bar{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:10px;
-}
-@media(max-width:600px){
-  table{font-size:12px;}
+@media(max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+    tr { margin-bottom: 15px; }
+    th { display: none; }
 }
 </style>
+
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- Firebase SDKs -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AtzaSyACC32QUpZuZfTvUkzmYkF356mcag12w1E",
+  authDomain: "vigitrack-lite.firebaseapp.com",
+  projectId: "vigitrack-lite",
+  storageBucket: "vigitrack-lite.firebasestorage.app",
+  messagingSenderId: "1071730133872",
+  appId: "1:1071730133872:web:1aee3ae466fb7729e29db5",
+  measurementId: "G-KKTLM1VRXH"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+signInAnonymously(auth);
+
+const complaintsRef = collection(db, "complaints");
+const tableBody = document.getElementById("complaintsTable");
+const counter = document.getElementById("count");
+
+let editId = null;
+
+/* Generate Complaint ID */
+function generateID() {
+    return "VT-" + Date.now();
+}
+document.getElementById("complaintId").value = generateID();
+
+/* Save / Update Complaint */
+document.getElementById("complaintForm").addEventListener("submit", async e => {
+    e.preventDefault();
+
+    const data = {
+        complaintId: document.getElementById("complaintId").value,
+        eventDate: document.getElementById("eventDate").value,
+        deviceName: document.getElementById("deviceName").value,
+        description: document.getElementById("description").value,
+        patientCount: document.getElementById("patientCount").value,
+        severity: document.getElementById("severity").value,
+        hospital: document.getElementById("hospital").value,
+        department: document.getElementById("department").value,
+        deviceNumber: document.getElementById("deviceNumber").value,
+        userId: document.getElementById("userId").value,
+        status: document.getElementById("status").value,
+        createdAt: new Date()
+    };
+
+    if (editId) {
+        await updateDoc(doc(db, "complaints", editId), data);
+        editId = null;
+    } else {
+        await addDoc(complaintsRef, data);
+    }
+
+    e.target.reset();
+    document.getElementById("complaintId").value = generateID();
+});
+
+/* Load Complaints */
+onSnapshot(complaintsRef, snapshot => {
+    tableBody.innerHTML = "";
+    counter.textContent = snapshot.size;
+
+    snapshot.forEach(docSnap => {
+        const c = docSnap.data();
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+        <td>${c.complaintId}</td>
+        <td>${c.eventDate}</td>
+        <td>${c.deviceName}</td>
+        <td>${c.severity}</td>
+        <td>${c.status}</td>
+        <td class="actions">
+            <button class="btn-secondary">Edit</button>
+            <button class="btn-danger">Delete</button>
+        </td>`;
+
+        row.querySelector(".btn-secondary").onclick = () => {
+            editId = docSnap.id;
+            for (let k in c) {
+                if (document.getElementById(k)) {
+                    document.getElementById(k).value = c[k];
+                }
+            }
+        };
+
+        row.querySelector(".btn-danger").onclick = async () => {
+            if (confirm("Delete this complaint?")) {
+                await deleteDoc(doc(db, "complaints", docSnap.id));
+            }
+        };
+
+        tableBody.appendChild(row);
+    });
+});
+
+/* Random Generator */
+document.getElementById("randomBtn").onclick = () => {
+    document.getElementById("complaintId").value = generateID();
+    document.getElementById("eventDate").value = new Date().toISOString().split("T")[0];
+    document.getElementById("deviceName").value = "Infusion Pump";
+    document.getElementById("description").value = "Unexpected alarm and flow interruption.";
+    document.getElementById("patientCount").value = 1;
+    document.getElementById("severity").value = "Major";
+    document.getElementById("hospital").value = "City Hospital";
+    document.getElementById("department").value = "ICU";
+    document.getElementById("deviceNumber").value = "MD-45721";
+    document.getElementById("userId").value = "User-01";
+    document.getElementById("status").value = "Open";
+};
+
+/* Export PDF */
+document.getElementById("pdfBtn").onclick = () => {
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+    pdf.text("VigiTrack Lite – Complaint Report", 10, 10);
+    let y = 20;
+
+    document.querySelectorAll("#complaintsTable tr").forEach(row => {
+        pdf.text(row.innerText, 10, y);
+        y += 10;
+    });
+
+    pdf.save("vigitrack_complaints.pdf");
+};
+</script>
 </head>
 
 <body>
 
 <header>
-  <h1>VigiTrack Lite</h1>
-  <p>Medical Device Incident, Vigilance & NABH Audit System</p>
+<h1>VigiTrack Lite</h1>
+<p>Medical Device Incident Reporting System</p>
 </header>
 
 <div class="container">
 
-<!-- INCIDENT FORM -->
 <div class="card">
-<h2>Device Incident & Quality Record</h2>
+<h2>New Complaint</h2>
+<form id="complaintForm">
 
-<div class="grid">
+<label>Complaint ID</label>
+<input id="complaintId" readonly>
 
-<div>
-<label>Device Name</label>
-<input id="device" required>
-</div>
-
-<!-- ✅ EVENT DATE – PROMINENT & MANDATORY -->
-<div>
-<label>Event / Complaint Registration Date <span>(Mandatory – NABH)</span></label>
+<label>Event Date</label>
 <input type="date" id="eventDate" required>
-</div>
 
-<div>
-<label>Department</label>
-<input id="department" placeholder="ICU / OT">
-</div>
-
-<div>
-<label>Reporter Role</label>
-<select id="role">
-<option>Nurse</option>
-<option>Technician</option>
-<option>Biomedical Engineer</option>
-<option>Doctor</option>
+<label>Device Name</label>
+<select id="deviceName">
+<option>Cardiac Monitor</option>
+<option>Ventilator</option>
+<option>Defibrillator</option>
+<option>ECG Machine</option>
+<option>Infusion Pump</option>
+<option>Pulse Oximeter</option>
 </select>
-</div>
 
-<div>
-<label>Manufacturer / Hospital Group</label>
-<select id="manufacturer">
-<option>Siemens</option>
-<option>GE Healthcare</option>
-<option>Philips</option>
-<option>Apollo Hospitals</option>
-<option>Fortis Healthcare</option>
-<option>Max Healthcare</option>
-<option>Medanta</option>
-<option>Manipal Hospitals</option>
-<option>Aster DM Healthcare</option>
-<option>Acibadem</option>
-<option>Sakra World Hospital</option>
-<option>CARE Hospitals</option>
-<option>Narayana Health</option>
-<option>Columbia Asia</option>
-</select>
-</div>
+<label>Incident Description</label>
+<textarea id="description"></textarea>
 
-<div>
-<label>Device Category</label>
-<select id="category">
+<label>Affected Patient Count</label>
+<input type="number" id="patientCount">
+
+<label>Severity</label>
+<select id="severity">
 <option>Critical</option>
-<option>Non-critical</option>
+<option>Major</option>
+<option>Minor</option>
 </select>
-</div>
 
-<div>
-<label>Patient Involved?</label>
-<select id="patient">
-<option value="no">No</option>
-<option value="yes">Yes</option>
-</select>
-</div>
+<label>Hospital Name</label>
+<input id="hospital">
 
-<div>
-<label>Injury Occurred?</label>
-<select id="injury">
-<option value="no">No</option>
-<option value="yes">Yes</option>
-</select>
-</div>
+<label>Department</label>
+<input id="department">
 
-<div>
-<label>Device Malfunction?</label>
-<select id="malfunction">
-<option value="no">No</option>
-<option value="yes">Yes</option>
-</select>
-</div>
+<label>Medical Device Number</label>
+<input id="deviceNumber">
 
-<div>
-<label>Risk Assessment</label>
-<select id="risk">
-<option>Low</option>
-<option>Medium</option>
-<option>High</option>
-</select>
-</div>
+<label>User ID</label>
+<input id="userId">
 
-<div>
-<label>Investigation Status</label>
+<label>Status</label>
 <select id="status">
 <option>Open</option>
-<option>In Progress</option>
+<option>Under Investigation</option>
 <option>Closed</option>
 </select>
+
+<button class="btn-primary" type="submit">Save Complaint</button>
+<button type="button" class="btn-success" id="randomBtn">Generate Random</button>
+
+</form>
 </div>
 
-<div>
-<label>Root Cause Category</label>
-<select id="rootCause">
-<option>Material Defect</option>
-<option>User Error</option>
-<option>Maintenance Issue</option>
-<option>Other</option>
-</select>
-</div>
-
-<div>
-<label>Corrective Action Required?</label>
-<select id="caRequired">
-<option>No</option>
-<option>Yes</option>
-</select>
-</div>
-
-<div>
-<label>NABH Compliance Status</label>
-<select id="nabh">
-<option>Pending</option>
-<option>Compliant</option>
-<option>Non-Compliant</option>
-</select>
-</div>
-
-<div>
-<label>Regulatory Notification Required?</label>
-<select id="regNotify">
-<option>No</option>
-<option>Yes</option>
-</select>
-</div>
-
-<div>
-<label>Regulatory Body</label>
-<select id="regBody">
-<option>CDSCO</option>
-<option>State Health Department</option>
-</select>
-</div>
-
-</div>
-
-<label>Corrective Action Description</label>
-<textarea id="caDesc"></textarea>
-
-<label>Quality Assurance Head Name</label>
-<input id="qaHead">
-
-<label>QA Sign-off Date</label>
-<input type="date" id="qaDate">
-
-<button class="btn-primary" onclick="saveIncident()">Save Incident</button>
-</div>
-
-<!-- FILTER & TABLE -->
 <div class="card">
-<div class="filter-bar">
-<select id="filterSeverity" onchange="loadTable()">
-<option value="">All Severities</option>
-<option>Low</option>
-<option>Medium</option>
-<option>High</option>
-</select>
-
-<select id="filterStatus" onchange="loadTable()">
-<option value="">All Status</option>
-<option>Open</option>
-<option>In Progress</option>
-<option>Closed</option>
-</select>
-
-<button class="btn-secondary" onclick="downloadCSV()">Download CSV</button>
-</div>
-
-<table>
-<thead>
-<tr>
-<th>Device</th>
-<th>Event Date</th>
-<th>Dept</th>
-<th>Severity</th>
-<th>Risk</th>
-<th>Status</th>
-<th>PDF</th>
-</tr>
-</thead>
-<tbody id="tableBody"></tbody>
-</table>
-</div>
-
-</div>
-
-<script>
-const KEY="vigitrack_final";
-
-function classifySeverity(p,i,m){
- if(p && i && m) return "High";
- if(m) return "Medium";
- return "Low";
-}
-
-function saveIncident(){
- let eventDate=document.getElementById("eventDate").value;
- if(!eventDate){
-   alert("Event / Complaint Registration Date is mandatory");
-   return;
- }
-
- let data=JSON.parse(localStorage.getItem(KEY)||"[]");
-
- let incident={
-  device:device.value,
-  eventDate:eventDate,
-  department:department.value,
-  role:role.value,
-  manufacturer:manufacturer.value,
-  category:category.value,
-  patient:patient.value,
-  injury:injury.value,
-  malfunction:malfunction.value,
-  risk:risk.value,
-  status:status.value,
-  rootCause:rootCause.value,
-  caRequired:caRequired.value,
-  caDesc:caDesc.value,
-  nabh:nabh.value,
-  regNotify:regNotify.value,
-  regBody:regBody.value,
-  qaHead:qaHead.value,
-  qaDate:qaDate.value,
-  severity:classifySeverity(
-    patient.value==="yes",
-    injury.value==="yes",
-    malfunction.value==="yes"
-  )
- };
-
- data.push(incident);
- localStorage.setItem(KEY,JSON.stringify(data));
- loadTable();
- alert("Incident saved successfully");
-}
-
-function loadTable(){
- let body=document.getElementById("tableBody");
- body.innerHTML="";
- let fs=document.getElementById("filterSeverity").value;
- let fst=document.getElementById("filterStatus").value;
-
- let data=JSON.parse(localStorage.getItem(KEY)||"[]");
-
- data.forEach((d,i)=>{
-  if(fs && d.severity!==fs) return;
-  if(fst && d.status!==fst) return;
-
-  body.innerHTML+=`
-  <tr>
-    <td>${d.device}</td>
-    <td>${d.eventDate}</td>
-    <td>${d.department}</td>
-    <td><span class="badge ${d.severity.toLowerCase()}">${d.severity}</span></td>
-    <td>${d.risk}</td>
-    <td>${d.status}</td>
-    <td><button onclick="exportPDF(${i})">PDF</button></td>
-  </tr>`;
- });
-}
-
-function exportPDF(i){
- const {jsPDF}=window.jspdf;
- let d=JSON.parse(localStorage.getItem(KEY))[i];
- let pdf=new jsPDF();
- let y=15;
- pdf.text("Medical Device Incident & NABH Audit Record",20,y); y+=10;
- Object.keys(d).forEach(k=>{
-   pdf.text(`${k}: ${d[k]}`,20,y);
-   y+=8;
- });
- pdf.save("VigiTrack_NABH_Incident.pdf");
-}
-
-function downloadCSV(){
- let data=JSON.parse(localStorage.getItem(KEY)||"[]");
- if(!data.length){ alert("No records available"); return; }
-
- let csv=Object.keys(data[0]).join(",")+"\n";
- data.forEach(r=>{
-   csv+=Object.values(r).join(",")+"\n";
- });
-
- let blob=new Blob([csv],{type:"text/csv"});
- let a=document.createElement("a");
- a.href=URL.createObjectURL(blob);
- a.download="VigiTrack_Incident_Log.csv";
- a.click();
-}
-
-loadTable();
-</script>
-
-</body>
-</html>
+<h2>All Complaints</h2>
+<p class="counter">Total Complaints: <span id="
